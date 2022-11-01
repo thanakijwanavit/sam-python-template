@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  sam-api-gateway
+
+  Sample SAM Template for sam-api-gateway
+
+Globals:
+  Function:
+    Timeout: 10
+    CodeUri: app/
+    Runtime: python3.9
+    Environment:
+      Variables:
+        BRANCH: !Ref BRANCH
+      
+      
+Parameters: 
+  BRANCH: 
+    Type: String
+    Default: dev-manual
+    Description: root branch name
+  REGION:
+    Type: String
+    Default: 'ap-southeast-1'
+
+Resources:
+######## functions #######
+  Add:
+    Type: AWS::Serverless::Function 
+    Properties:
+      Handler: app.add
+      Events:
+        addTodo:
+          Type: Api 
+          Properties:
+            Path: /add
+            Method: post
+            RestApiId: !Ref ApiGateway
+######### apis ########
+  ApiGateway:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: Prod
+      EndpointConfiguration:
+        Type: REGIONAL
+      Cors:
+        AllowMethods: "'*'"
+        AllowHeaders: "'*'"
+        AllowOrigin: "'*'"
+
+
+Outputs:
+  MainApi:
+    Description: "api"
+    Value: !Sub "https://${ApiGateway}.execute-api.${AWS::Region}.amazonaws.com/Prod/"
